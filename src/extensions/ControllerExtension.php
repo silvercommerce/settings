@@ -30,10 +30,20 @@ class ControllerExtension extends Extension
         if (!$tests && !in_array(get_class($this->owner), $disallowed_controllers)) {
             // Set global local based on Site Config
             $config = SiteConfig::current_site_config();
-            i18n::set_locale($config->SiteLocale);
+            $locale = $config->SiteLocale;
+
+            // Fallback to default locale if not set
+            if (empty($locale)) {
+                $locale = i18n::config()->default_locale;
+            }
+
+            i18n::set_locale($locale);
 
             // Now find and set the desired currency symbol
-            $number_format = new NumberFormatter($config->SiteLocale, NumberFormatter::CURRENCY);
+            $number_format = new NumberFormatter(
+                (string)$config->SiteLocale,
+                NumberFormatter::CURRENCY
+            );
             $symbol = $number_format->getSymbol(NumberFormatter::CURRENCY_SYMBOL);
             DBCurrency::config()->currency_symbol = $symbol;
         }
